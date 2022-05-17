@@ -12,6 +12,9 @@ import { catchError, map, tap } from "rxjs/operators";
 export class HeroService {
 
   private heroesUrl = 'api/heroes';
+  httpOptions = {
+    headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+  };
 
   constructor(
     private http: HttpClient,
@@ -41,11 +44,26 @@ export class HeroService {
   // GET hero by id. Will 404 if id not found
   getHero(id: number): Observable<Hero> {
     const url = `${this.heroesUrl}/${id}`;
-    return this.http.get<Hero>(url)
-      .pipe(
-        tap(_ => this.log(`Fetched hero id = ${id}`)),
-        catchError(this.handleError<Hero>(`getHero id = ${id}`))
-      );
+    return this.http.get<Hero>(url).pipe(
+      tap(_ => this.log(`Fetched hero id = ${id}`)),
+      catchError(this.handleError<Hero>(`getHero id = ${id}`))
+    );
+  }
+
+  // PUT: Update hero on server
+  updateHero(hero: Hero): Observable<any> {
+    return this.http.put(this.heroesUrl, hero, this.httpOptions).pipe(
+      tap(_ => this.log(`Updated hero id = ${hero.id}`)),
+      catchError(this.handleError<any>('updateHero'))
+    )
+  }
+
+  // POST: Add new hero to server
+  addHero(hero: Hero): Observable<Hero> {
+    return this.http.post<Hero>(this.heroesUrl, hero, this.httpOptions).pipe(
+      tap((newHero: Hero) => this.log(`Added hero w/ id = ${newHero.id}`)),
+      catchError(this.handleError<Hero>('addHero'))
+    );
   }
 
 }
